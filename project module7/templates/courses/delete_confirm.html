@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete Course - {{ course.code }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 3rem auto;">
+    <div class="glass-card" style="border-color: rgba(244, 63, 94, 0.3);">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div class="stat-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem auto; background: rgba(244, 63, 94, 0.2); color: var(--accent-rose); font-size: 2rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2>Confirm Course Deletion</h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">
+                Are you sure you want to permanently delete course <strong>"{{ course.code }}: {{ course.name }}"</strong>?
+            </p>
+            <p style="color: var(--accent-rose); font-size: 0.85rem; margin-top: 0.5rem; background: rgba(244, 63, 94, 0.1); padding: 0.5rem; border-radius: 6px;">
+                <i class="fa-solid fa-circle-exclamation"></i> All grade records linked to this course will also be permanently deleted!
+            </p>
+        </div>
+
+        <form action="{{ url_for('delete_course', id=course.id) }}" method="POST" style="display: flex; gap: 1rem;">
+            <input type="hidden" name="_method" value="DELETE">
+            <a href="{{ url_for('list_courses') }}" class="btn btn-secondary" style="flex: 1;"><i class="fa-solid fa-xmark"></i> Cancel</a>
+            <button type="submit" class="btn btn-danger" style="flex: 1;"><i class="fa-solid fa-trash-can"></i> Yes, Delete Course</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

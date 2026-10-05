@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.code }} - {{ course.name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('list_courses') }}" class="btn btn-secondary btn-sm" style="margin-bottom: 1rem;"><i class="fa-solid fa-arrow-left"></i> Back to Courses</a>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h2><i class="fa-solid fa-book" style="color: var(--accent-purple);"></i> {{ course.code }}: {{ course.name }}</h2>
+            <p style="color: var(--text-muted);">{{ course.credits }} Credits &bull; {{ course.description }}</p>
+        </div>
+        {% if current_user.role == 'admin' %}
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="{{ url_for('edit_course_form', id=course.id) }}" class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Edit Course</a>
+            <a href="{{ url_for('delete_course_confirm', id=course.id) }}" class="btn btn-danger"><i class="fa-solid fa-trash-can"></i> Delete</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if summary.has_data and summary.course_analytics %}
+{% set c_stat = summary.course_analytics[0] %}
+<div class="stats-grid" style="margin-bottom: 2rem;">
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(99, 102, 241, 0.2); color: var(--accent-indigo);">
+            <i class="fa-solid fa-users"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ c_stat.count }}</div>
+            <div class="stat-lbl">Enrolled Students</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald);">
+            <i class="fa-solid fa-calculator"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ c_stat.mean }}%</div>
+            <div class="stat-lbl">Class Average (Mean)</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan);">
+            <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ c_stat.median }}%</div>
+            <div class="stat-lbl">Median Score</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-amber);">
+            <i class="fa-solid fa-percent"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ c_stat.pass_rate }}%</div>
+            <div class="stat-lbl">Pass Rate</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="glass-card">
+    <h3 style="margin-bottom: 1.25rem;"><i class="fa-solid fa-ranking-star" style="color: var(--accent-amber);"></i> Student Rankings in {{ course.code }}</h3>
+    
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Student Name</th>
+                    <th>Score</th>
+                    <th>Letter Grade</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if summary.has_data and summary.student_rankings %}
+                    {% for item in summary.student_rankings %}
+                    <tr>
+                        <td><strong>#{{ item.rank }}</strong></td>
+                        <td><a href="{{ url_for('view_student', id=item.student_id) }}" style="font-weight: 600;">{{ item.student_name }}</a></td>
+                        <td><strong style="color: var(--accent-purple);">{{ item.score }}%</strong></td>
+                        <td><span class="badge badge-{{ item.letter_grade|lower }}">{{ item.letter_grade }}</span></td>
+                        <td style="color: var(--text-muted);">{{ item.date }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No grade records submitted for this course yet.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

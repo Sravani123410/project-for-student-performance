@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Students Roster - Student Analytics{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h2><i class="fa-solid fa-user-graduate" style="color: var(--accent-indigo);"></i> Students Directory</h2>
+        <p style="color: var(--text-muted);">Manage student profiles and view performance</p>
+    </div>
+    {% if current_user.role == 'admin' %}
+    <a href="{{ url_for('new_student_form') }}" class="btn btn-primary">
+        <i class="fa-solid fa-user-plus"></i> Add New Student
+    </a>
+    {% endif %}
+</div>
+
+<!-- Search & Filter Form -->
+<div class="glass-card" style="padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+    <form action="{{ url_for('list_students') }}" method="GET" style="display: flex; gap: 0.75rem; align-items: center;">
+        <div style="flex: 1; position: relative;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+            <input type="text" name="search" class="form-control" style="padding-left: 2.5rem;" placeholder="Search student by name or email..." value="{{ search }}">
+        </div>
+        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Search</button>
+        {% if search %}
+        <a href="{{ url_for('list_students') }}" class="btn btn-secondary" title="Clear Filter"><i class="fa-solid fa-xmark"></i> Reset</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Students Table -->
+<div class="glass-card" style="padding: 0; overflow: hidden;">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Student Name</th>
+                    <th>Email Address</th>
+                    <th>Grades Recorded</th>
+                    <th>Joined Date</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if students %}
+                    {% for student in students %}
+                    <tr>
+                        <td>#{{ student.id }}</td>
+                        <td><strong>{{ student.name }}</strong></td>
+                        <td style="color: var(--text-muted);">{{ student.email }}</td>
+                        <td><span class="badge" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">{{ student.grades|length }} grades</span></td>
+                        <td style="color: var(--text-muted);">{{ student.created_at.strftime('%Y-%m-%d') if student.created_at else 'N/A' }}</td>
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 0.4rem;">
+                                <a href="{{ url_for('view_student', id=student.id) }}" class="btn btn-secondary btn-sm" title="View Detail"><i class="fa-solid fa-eye"></i></a>
+                                {% if current_user.role == 'admin' %}
+                                <a href="{{ url_for('edit_student_form', id=student.id) }}" class="btn btn-secondary btn-sm" title="Edit Student"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{{ url_for('delete_student_confirm', id=student.id) }}" class="btn btn-danger btn-sm" title="Delete Student"><i class="fa-solid fa-trash-can"></i></a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No students found matching your query.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

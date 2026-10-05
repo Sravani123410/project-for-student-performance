@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Bulk Upload CSV - Student Analytics{% endblock %}
+
+{% block content %}
+<div style="max-width: 560px; margin: 2rem auto;">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2><i class="fa-solid fa-file-csv" style="color: var(--accent-emerald);"></i> Bulk Import Grades (CSV)</h2>
+            <a href="{{ url_for('list_grades') }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-xmark"></i> Cancel</a>
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Upload a CSV file containing student scores. The system will automatically map student emails and course codes to calculate analytics.
+        </p>
+
+        <form action="{{ url_for('upload_grades_csv') }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="form-label" for="file">Select CSV File</label>
+                <input type="file" id="file" name="file" class="form-control" accept=".csv" required style="padding: 0.5rem;">
+            </div>
+
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                <h4 style="color: var(--accent-emerald); margin-bottom: 0.4rem;"><i class="fa-solid fa-circle-info"></i> CSV File Requirements:</h4>
+                <p>Your CSV file should have headers matching:</p>
+                <code style="display: block; margin-top: 0.4rem; padding: 0.4rem; background: rgba(0,0,0,0.3); border-radius: 4px;">student_email, student_name, course_code, score, date</code>
+                <span style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.4rem; display: block;">
+                    Example: <code>ian.wright@university.edu, Ian Wright, CS101, 92.5, 2026-09-15</code>
+                </span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Start CSV Import
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

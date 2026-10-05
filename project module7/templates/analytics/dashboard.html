@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics Dashboard - Pandas & NumPy Insights{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h2><i class="fa-solid fa-chart-pie" style="color: var(--accent-indigo);"></i> Data Analytics Dashboard</h2>
+        <p style="color: var(--text-muted);">Real-time statistical calculations powered by Pandas & NumPy</p>
+    </div>
+
+    <!-- Export Buttons -->
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('export_analytics', format='csv', course_id=selected_course, student_id=selected_student) }}" class="btn btn-secondary">
+            <i class="fa-solid fa-file-csv" style="color: var(--accent-emerald);"></i> Export CSV
+        </a>
+        <a href="{{ url_for('export_analytics', format='xlsx', course_id=selected_course, student_id=selected_student) }}" class="btn btn-primary">
+            <i class="fa-solid fa-file-excel"></i> Export Excel (.xlsx)
+        </a>
+    </div>
+</div>
+
+<!-- Analytics Filter Form -->
+<div class="glass-card" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+    <form action="{{ url_for('analytics_dashboard') }}" method="GET" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+            <label class="form-label">Filter Analytics by Course</label>
+            <select name="course_id" class="form-control" onchange="this.form.submit()">
+                <option value="">-- All Courses --</option>
+                {% for course in courses %}
+                <option value="{{ course.id }}" {% if selected_course == course.id %}selected{% endif %}>
+                    {{ course.code }}: {{ course.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="flex: 1; min-width: 200px;">
+            <label class="form-label">Filter Analytics by Student</label>
+            <select name="student_id" class="form-control" onchange="this.form.submit()">
+                <option value="">-- All Students --</option>
+                {% for student in students %}
+                <option value="{{ student.id }}" {% if selected_student == student.id %}selected{% endif %}>
+                    {{ student.name }} ({{ student.email }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        {% if selected_course or selected_student %}
+        <div>
+            <a href="{{ url_for('analytics_dashboard') }}" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i> Reset Filters</a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+{% if summary.has_data %}
+<!-- Top Statistical Metric Cards (NumPy & Pandas) -->
+<div class="stats-grid">
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(99, 102, 241, 0.2); color: var(--accent-indigo);">
+            <i class="fa-solid fa-calculator"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ summary.overall.mean }}%</div>
+            <div class="stat-lbl">Mean (Average Score)</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple);">
+            <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ summary.overall.median }}%</div>
+            <div class="stat-lbl">Median Score</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan);">
+            <i class="fa-solid fa-wave-square"></i>
+        </div>
+        <div>
+            <div class="stat-val">&plusmn;{{ summary.overall.std }}</div>
+            <div class="stat-lbl">Std Deviation (&sigma;)</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald);">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ summary.overall.max }}% / {{ summary.overall.min }}%</div>
+            <div class="stat-lbl">Max / Min Score</div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Chart Visualizations (Chart.js) -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Course Average Scores Bar Chart -->
+    <div class="glass-card">
+        <h3 style="margin-bottom: 1.25rem;"><i class="fa-solid fa-chart-column" style="color: var(--accent-indigo);"></i> Average Grade by Course</h3>
+        <div style="position: relative; height: 280px;">
+            <canvas id="courseChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Grade Level Distribution Doughnut Chart -->
+    <div class="glass-card">
+        <h3 style="margin-bottom: 1.25rem;"><i class="fa-solid fa-chart-pie" style="color: var(--accent-cyan);"></i> Grade Distribution (A to F)</h3>
+        <div style="position: relative; height: 280px; display: flex; justify-content: center;">
+            <canvas id="distributionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Aggregation Summary Table by Course -->
+<div class="glass-card" style="margin-bottom: 2rem;">
+    <h3 style="margin-bottom: 1.25rem;"><i class="fa-solid fa-table-list" style="color: var(--accent-purple);"></i> Course Performance Aggregations (Pandas GroupBy)</h3>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>Course Title</th>
+                    <th>Students</th>
+                    <th>Mean Score</th>
+                    <th>Median Score</th>
+                    <th>Std Dev</th>
+                    <th>Min</th>
+                    <th>Max</th>
+                    <th>Pass Rate (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in summary.course_analytics %}
+                <tr>
+                    <td><strong style="color: var(--accent-purple);">{{ course.course_code }}</strong></td>
+                    <td>{{ course.course_name }}</td>
+                    <td>{{ course.count }}</td>
+                    <td><strong style="color: var(--accent-emerald);">{{ course.mean }}%</strong></td>
+                    <td>{{ course.median }}%</td>
+                    <td style="color: var(--text-muted);">&plusmn;{{ course.std }}</td>
+                    <td style="color: var(--accent-rose);">{{ course.min }}%</td>
+                    <td style="color: var(--accent-emerald);">{{ course.max }}%</td>
+                    <td>
+                        <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">{{ course.pass_rate }}%</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Student Rankings Table per Course -->
+<div class="glass-card">
+    <h3 style="margin-bottom: 1.25rem;"><i class="fa-solid fa-ranking-star" style="color: var(--accent-amber);"></i> Student Course Rankings (Pandas Rank)</h3>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Rank</th>
+                    <th>Student Name</th>
+                    <th>Score</th>
+                    <th>Letter Grade</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in summary.student_rankings %}
+                <tr>
+                    <td><strong>{{ item.course_code }}</strong></td>
+                    <td>
+                        {% if item.rank == 1 %}
+                        <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);"><i class="fa-solid fa-crown"></i> Rank #1</span>
+                        {% else %}
+                        Rank #{{ item.rank }}
+                        {% endif %}
+                    </td>
+                    <td><a href="{{ url_for('view_student', id=item.student_id) }}" style="font-weight: 600;">{{ item.student_name }}</a></td>
+                    <td><strong style="color: var(--accent-indigo);">{{ item.score }}%</strong></td>
+                    <td><span class="badge badge-{{ item.letter_grade|lower }}">{{ item.letter_grade }}</span></td>
+                    <td style="color: var(--text-muted);">{{ item.date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% else %}
+<div class="glass-card" style="text-align: center; padding: 4rem 2rem;">
+    <div class="stat-icon" style="width: 70px; height: 70px; margin: 0 auto 1rem auto; background: rgba(99, 102, 241, 0.15); color: var(--accent-indigo); font-size: 2rem;">
+        <i class="fa-solid fa-chart-line"></i>
+    </div>
+    <h2>No Analytics Data Available</h2>
+    <p style="color: var(--text-muted); max-width: 440px; margin: 0.5rem auto 1.5rem auto;">
+        No grade records match the selected filter. Try selecting different criteria or assign grades to students.
+    </p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{% if summary.has_data %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Course Mean Scores Bar Chart
+        const courseLabels = [{% for c in summary.course_analytics %}'{{ c.course_code }}',{% endfor %}];
+        const courseMeans = [{% for c in summary.course_analytics %}{{ c.mean }},{% endfor %}];
+
+        const ctxCourse = document.getElementById('courseChart').getContext('2d');
+        new Chart(ctxCourse, {
+            type: 'bar',
+            data: {
+                labels: courseLabels,
+                datasets: [{
+                    label: 'Mean Grade (%)',
+                    data: courseMeans,
+                    backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                    borderColor: '#6366f1',
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#9ca3af' }
+                    }
+                }
+            }
+        });
+
+        // Grade Level Distribution Doughnut Chart
+        const distData = [
+            {{ summary.grade_distribution.A }},
+            {{ summary.grade_distribution.B }},
+            {{ summary.grade_distribution.C }},
+            {{ summary.grade_distribution.D }},
+            {{ summary.grade_distribution.F }}
+        ];
+
+        const ctxDist = document.getElementById('distributionChart').getContext('2d');
+        new Chart(ctxDist, {
+            type: 'doughnut',
+            data: {
+                labels: ['A (90-100%)', 'B (80-89%)', 'C (70-79%)', 'D (60-69%)', 'F (<60%)'],
+                datasets: [{
+                    data: distData,
+                    backgroundColor: [
+                        '#10b981', // Emerald A
+                        '#06b6d4', // Cyan B
+                        '#f59e0b', // Amber C
+                        '#fb923c', // Orange D
+                        '#f43f5e'  # Rose F
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: '#e5e7eb', font: { family: 'Plus Jakarta Sans' } }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

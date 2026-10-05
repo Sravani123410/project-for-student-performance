@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 3rem auto;">
+    <div class="glass-card" style="border-color: rgba(244, 63, 94, 0.3);">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div class="stat-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem auto; background: rgba(244, 63, 94, 0.2); color: var(--accent-rose); font-size: 2rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2>Confirm Student Deletion</h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">
+                Are you sure you want to permanently delete student <strong>"{{ student.name }}"</strong> ({{ student.email }})?
+            </p>
+            <p style="color: var(--accent-rose); font-size: 0.85rem; margin-top: 0.5rem; background: rgba(244, 63, 94, 0.1); padding: 0.5rem; border-radius: 6px;">
+                <i class="fa-solid fa-circle-exclamation"></i> This will also remove all associated grade records for this student!
+            </p>
+        </div>
+
+        <form action="{{ url_for('delete_student', id=student.id) }}" method="POST" style="display: flex; gap: 1rem;">
+            <input type="hidden" name="_method" value="DELETE">
+            <a href="{{ url_for('list_students') }}" class="btn btn-secondary" style="flex: 1;"><i class="fa-solid fa-xmark"></i> Cancel</a>
+            <button type="submit" class="btn btn-danger" style="flex: 1;"><i class="fa-solid fa-trash-can"></i> Yes, Delete Student</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

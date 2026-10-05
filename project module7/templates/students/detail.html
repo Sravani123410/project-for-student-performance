@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.name }} - Student Details{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('list_students') }}" class="btn btn-secondary btn-sm" style="margin-bottom: 1rem;"><i class="fa-solid fa-arrow-left"></i> Back to Roster</a>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h2><i class="fa-solid fa-user-graduate" style="color: var(--accent-indigo);"></i> {{ student.name }}</h2>
+            <p style="color: var(--text-muted);"><i class="fa-solid fa-envelope"></i> {{ student.email }} &bull; Student ID: #{{ student.id }}</p>
+        </div>
+        {% if current_user.role == 'admin' %}
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="{{ url_for('edit_student_form', id=student.id) }}" class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Edit Profile</a>
+            <a href="{{ url_for('delete_student_confirm', id=student.id) }}" class="btn btn-danger"><i class="fa-solid fa-trash-can"></i> Delete</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-bottom: 2rem;">
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(99, 102, 241, 0.2); color: var(--accent-indigo);">
+            <i class="fa-solid fa-book"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ summary.student_summaries[0].courses_taken if summary.has_data else 0 }}</div>
+            <div class="stat-lbl">Courses Enrolled</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald);">
+            <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div>
+            <div class="stat-val">
+                {% if summary.has_data %}{{ summary.student_summaries[0].average_score }}%{% else %}N/A{% endif %}
+            </div>
+            <div class="stat-lbl">GPA / Average Score</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-amber);">
+            <i class="fa-solid fa-trophy"></i>
+        </div>
+        <div>
+            <div class="stat-val">
+                {% if summary.has_data %}#{{ summary.student_summaries[0].overall_rank }}{% else %}N/A{% endif %}
+            </div>
+            <div class="stat-lbl">Overall Rank</div>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card">
+    <h3 style="margin-bottom: 1.25rem;"><i class="fa-solid fa-award" style="color: var(--accent-cyan);"></i> Course Grades & Performance</h3>
+    
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Score</th>
+                    <th>Letter Grade</th>
+                    <th>Rank in Course</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if summary.has_data and summary.student_rankings %}
+                    {% for grade in summary.student_rankings %}
+                    <tr>
+                        <td><strong>{{ grade.course_code }}</strong></td>
+                        <td>{{ grade.course_name }}</td>
+                        <td><strong style="color: var(--accent-indigo);">{{ grade.score }}%</strong></td>
+                        <td>
+                            <span class="badge badge-{{ grade.letter_grade|lower }}">{{ grade.letter_grade }}</span>
+                        </td>
+                        <td>#{{ grade.rank }}</td>
+                        <td style="color: var(--text-muted);">{{ grade.date }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No grade records found for this student.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

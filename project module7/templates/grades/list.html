@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Grade Entries - Student Analytics{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h2><i class="fa-solid fa-award" style="color: var(--accent-cyan);"></i> Grade Management</h2>
+        <p style="color: var(--text-muted);">Record, filter, and modify student academic scores</p>
+    </div>
+    {% if current_user.role == 'admin' %}
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('upload_grades_form') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-file-csv" style="color: var(--accent-emerald);"></i> Bulk Upload CSV
+        </a>
+        <a href="{{ url_for('new_grade_form') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Assign New Grade
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Filter Dropdowns Bar -->
+<div class="glass-card" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+    <form action="{{ url_for('list_grades') }}" method="GET" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+            <label class="form-label">Filter by Course</label>
+            <select name="course_id" class="form-control" onchange="this.form.submit()">
+                <option value="">-- All Courses --</option>
+                {% for course in courses %}
+                <option value="{{ course.id }}" {% if selected_course == course.id %}selected{% endif %}>
+                    {{ course.code }}: {{ course.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="flex: 1; min-width: 200px;">
+            <label class="form-label">Filter by Student</label>
+            <select name="student_id" class="form-control" onchange="this.form.submit()">
+                <option value="">-- All Students --</option>
+                {% for student in students %}
+                <option value="{{ student.id }}" {% if selected_student == student.id %}selected{% endif %}>
+                    {{ student.name }} ({{ student.email }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        {% if selected_course or selected_student %}
+        <div>
+            <a href="{{ url_for('list_grades') }}" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i> Clear Filters</a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Grades Table -->
+<div class="glass-card" style="padding: 0; overflow: hidden;">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Grade ID</th>
+                    <th>Student Name</th>
+                    <th>Course Code & Name</th>
+                    <th>Score</th>
+                    <th>Grade Level</th>
+                    <th>Date Recorded</th>
+                    {% if current_user.role == 'admin' %}
+                    <th style="text-align: right;">Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if grades %}
+                    {% for grade in grades %}
+                    <tr>
+                        <td>#{{ grade.id }}</td>
+                        <td>
+                            <a href="{{ url_for('view_student', id=grade.student.id) }}" style="font-weight: 600;">
+                                {{ grade.student.name if grade.student else 'Unknown' }}
+                            </a>
+                        </td>
+                        <td>
+                            <strong>{{ grade.course.code }}</strong> - {{ grade.course.name if grade.course else 'Unknown' }}
+                        </td>
+                        <td>
+                            <strong style="font-size: 1.05rem; color: var(--accent-indigo);">{{ grade.score }}%</strong>
+                        </td>
+                        <td>
+                            {% if grade.score >= 90 %}
+                            <span class="badge badge-a">A (Excellent)</span>
+                            {% elif grade.score >= 80 %}
+                            <span class="badge badge-b">B (Good)</span>
+                            {% elif grade.score >= 70 %}
+                            <span class="badge badge-c">C (Average)</span>
+                            {% elif grade.score >= 60 %}
+                            <span class="badge badge-d">D (Pass)</span>
+                            {% else %}
+                            <span class="badge badge-f">F (Fail)</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--text-muted);">{{ grade.date.strftime('%Y-%m-%d') if grade.date else 'N/A' }}</td>
+                        {% if current_user.role == 'admin' %}
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 0.4rem;">
+                                <a href="{{ url_for('edit_grade_form', id=grade.id) }}" class="btn btn-secondary btn-sm" title="Edit Grade"><i class="fa-solid fa-pen"></i></a>
+                                <form action="{{ url_for('delete_grade', id=grade.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete grade record #{{ grade.id }}?');">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Delete Grade"><i class="fa-solid fa-trash-can"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No grade records found matching the criteria.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

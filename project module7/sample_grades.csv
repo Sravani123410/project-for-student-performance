@@ -1,0 +1,6 @@
+student_email,student_name,course_code,score,date
+ian.wright@university.edu,Ian Wright,CS101,92.5,2026-09-15
+julia.roberts@university.edu,Julia Roberts,MATH201,88.0,2026-09-16
+alice.johnson@university.edu,Alice Johnson,DS301,96.0,2026-09-17
+bob.smith@university.edu,Bob Smith,DB102,74.5,2026-09-18
+kevin.bacon@university.edu,Kevin Bacon,CS101,81.0,2026-09-19

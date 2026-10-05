@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if grade %}Edit Grade Record{% else %}Assign Student Grade{% endif %}{% endblock %}
+
+{% block content %}
+<div style="max-width: 520px; margin: 2rem auto;">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2>
+                {% if grade %}
+                <i class="fa-solid fa-pen-to-square" style="color: var(--accent-cyan);"></i> Edit Grade Record
+                {% else %}
+                <i class="fa-solid fa-plus-circle" style="color: var(--accent-cyan);"></i> Assign Student Grade
+                {% endif %}
+            </h2>
+            <a href="{{ url_for('list_grades') }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-xmark"></i> Cancel</a>
+        </div>
+
+        <form action="{% if grade %}{{ url_for('update_grade', id=grade.id) }}{% else %}{{ url_for('create_grade') }}{% endif %}" method="POST">
+            {% if grade %}
+            <input type="hidden" name="_method" value="PUT">
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label" for="student_id">Student</label>
+                <select id="student_id" name="student_id" class="form-control" {% if grade %}disabled{% endif %} required>
+                    <option value="">-- Select Student --</option>
+                    {% for student in students %}
+                    <option value="{{ student.id }}" {% if grade and grade.student_id == student.id %}selected{% endif %}>
+                        {{ student.name }} ({{ student.email }})
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if grade %}<input type="hidden" name="student_id" value="{{ grade.student_id }}">{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="course_id">Course</label>
+                <select id="course_id" name="course_id" class="form-control" {% if grade %}disabled{% endif %} required>
+                    <option value="">-- Select Course --</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}" {% if grade and grade.course_id == course.id %}selected{% endif %}>
+                        {{ course.code }}: {{ course.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if grade %}<input type="hidden" name="course_id" value="{{ grade.course_id }}">{% endif %}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label" for="score">Score (%)</label>
+                    <input type="number" step="0.1" id="score" name="score" class="form-control" placeholder="e.g. 85.5" min="0" max="100" value="{{ grade.score if grade else '' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="date">Date</label>
+                    <input type="date" id="date" name="date" class="form-control" value="{{ grade.date.strftime('%Y-%m-%d') if grade and grade.date else '' }}">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Grade Entry
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

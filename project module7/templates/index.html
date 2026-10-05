@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Student Performance Analytics{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2><i class="fa-solid fa-gauge" style="color: var(--accent-indigo);"></i> System Dashboard</h2>
+    <p style="color: var(--text-muted);">Overview of academic performance, courses, and statistical metrics</p>
+</div>
+
+<!-- Stat KPI Cards -->
+<div class="stats-grid">
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(99, 102, 241, 0.2); color: var(--accent-indigo);">
+            <i class="fa-solid fa-user-graduate"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ total_students }}</div>
+            <div class="stat-lbl">Active Students</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple);">
+            <i class="fa-solid fa-book-open"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ total_courses }}</div>
+            <div class="stat-lbl">Enrolled Courses</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan);">
+            <i class="fa-solid fa-award"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ total_grades }}</div>
+            <div class="stat-lbl">Grade Entries</div>
+        </div>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald);">
+            <i class="fa-solid fa-calculator"></i>
+        </div>
+        <div>
+            <div class="stat-val">
+                {% if summary.has_data %}{{ summary.overall.mean }}%{% else %}N/A{% endif %}
+            </div>
+            <div class="stat-lbl">Overall Mean Score</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Action Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    
+    <div class="glass-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+            <h3><i class="fa-solid fa-bolt" style="color: var(--accent-amber);"></i> Quick Actions</h3>
+            {% if current_user.role == 'admin' %}
+            <span class="badge role-admin">Admin Controls</span>
+            {% else %}
+            <span class="badge role-student">Student View</span>
+            {% endif %}
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('new_student_form') }}" class="btn btn-secondary" style="justify-content: flex-start;">
+                <i class="fa-solid fa-user-plus" style="color: var(--accent-indigo);"></i> Add New Student
+            </a>
+            <a href="{{ url_for('new_course_form') }}" class="btn btn-secondary" style="justify-content: flex-start;">
+                <i class="fa-solid fa-plus-circle" style="color: var(--accent-purple);"></i> Add New Course
+            </a>
+            <a href="{{ url_for('new_grade_form') }}" class="btn btn-secondary" style="justify-content: flex-start;">
+                <i class="fa-solid fa-pen-to-square" style="color: var(--accent-cyan);"></i> Assign Student Grade
+            </a>
+            <a href="{{ url_for('upload_grades_form') }}" class="btn btn-secondary" style="justify-content: flex-start;">
+                <i class="fa-solid fa-file-csv" style="color: var(--accent-emerald);"></i> Bulk Upload CSV Grades
+            </a>
+            {% else %}
+            <a href="{{ url_for('list_students') }}" class="btn btn-secondary" style="justify-content: flex-start;">
+                <i class="fa-solid fa-users"></i> View Students Roster
+            </a>
+            <a href="{{ url_for('list_courses') }}" class="btn btn-secondary" style="justify-content: flex-start;">
+                <i class="fa-solid fa-book"></i> View Courses Catalog
+            </a>
+            {% endif %}
+            <a href="{{ url_for('analytics_dashboard') }}" class="btn btn-primary" style="justify-content: flex-start;">
+                <i class="fa-solid fa-chart-line"></i> Open Analytics Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Data Summary Card -->
+    <div class="glass-card">
+        <h3 style="margin-bottom: 1.25rem;"><i class="fa-solid fa-chart-simple" style="color: var(--accent-cyan);"></i> Statistical Summary (Pandas & NumPy)</h3>
+        
+        {% if summary.has_data %}
+        <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                <span style="color: var(--text-muted);">Mean Score (Average)</span>
+                <strong>{{ summary.overall.mean }}%</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                <span style="color: var(--text-muted);">Median Score</span>
+                <strong>{{ summary.overall.median }}%</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                <span style="color: var(--text-muted);">Standard Deviation (&sigma;)</span>
+                <strong>{{ summary.overall.std }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                <span style="color: var(--text-muted);">Highest Score</span>
+                <strong style="color: var(--accent-emerald);">{{ summary.overall.max }}%</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Lowest Score</span>
+                <strong style="color: var(--accent-rose);">{{ summary.overall.min }}%</strong>
+            </div>
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted);">No grade records available for analytics yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Top Student Performance Table -->
+{% if summary.has_data and summary.student_summaries %}
+<div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3><i class="fa-solid fa-trophy" style="color: var(--accent-amber);"></i> Top Performing Students (Overall Rank)</h3>
+        <a href="{{ url_for('analytics_dashboard') }}" class="btn btn-secondary btn-sm">View Full Dashboard</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Student Name</th>
+                    <th>Email</th>
+                    <th>Courses Enrolled</th>
+                    <th>Average Score</th>
+                    <th>Highest Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in summary.student_summaries[:5] %}
+                <tr>
+                    <td>
+                        {% if student.overall_rank == 1 %}
+                        <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);"><i class="fa-solid fa-crown"></i> #1</span>
+                        {% elif student.overall_rank == 2 %}
+                        <span class="badge" style="background: rgba(156, 163, 175, 0.2); color: #d1d5db; border: 1px solid rgba(156, 163, 175, 0.4);">#2</span>
+                        {% elif student.overall_rank == 3 %}
+                        <span class="badge" style="background: rgba(180, 83, 9, 0.2); color: #f59e0b; border: 1px solid rgba(180, 83, 9, 0.4);">#3</span>
+                        {% else %}
+                        #{{ student.overall_rank }}
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ student.student_name }}</strong></td>
+                    <td style="color: var(--text-muted);">{{ student.student_email }}</td>
+                    <td>{{ student.courses_taken }}</td>
+                    <td>
+                        <span style="font-weight: 700; color: var(--accent-emerald);">{{ student.average_score }}%</span>
+                    </td>
+                    <td>{{ student.highest_score }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

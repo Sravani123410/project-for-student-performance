@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Performance Analytics{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- App Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Header Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('dashboard') }}" class="brand-logo">
+                <div class="brand-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <span>EduAnalytics</span>
+            </a>
+
+            {% if current_user %}
+            <ul class="nav-links">
+                <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}"><i class="fa-solid fa-gauge"></i> Dashboard</a></li>
+                <li><a href="{{ url_for('list_students') }}" class="nav-link {% if 'student' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-user-graduate"></i> Students</a></li>
+                <li><a href="{{ url_for('list_courses') }}" class="nav-link {% if 'course' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-book-open"></i> Courses</a></li>
+                <li><a href="{{ url_for('list_grades') }}" class="nav-link {% if 'grade' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-award"></i> Grades</a></li>
+                <li><a href="{{ url_for('analytics_dashboard') }}" class="nav-link {% if 'analytics' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-chart-pie"></i> Analytics</a></li>
+            </ul>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="user-badge">
+                    <i class="fa-solid fa-circle-user" style="color: var(--accent-indigo);"></i>
+                    <span>{{ current_user.name }}</span>
+                    <span class="role-pill role-{{ current_user.role }}">{{ current_user.role }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm" title="Log Out"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+            {% else %}
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{{ url_for('login_page') }}" class="btn btn-secondary btn-sm">Log In</a>
+                <a href="{{ url_for('register_page') }}" class="btn btn-primary btn-sm">Register</a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-wrapper">
+        <!-- Flash Messages -->
+        <div class="flash-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <span><i class="fa-solid fa-circle-info"></i> {{ message }}</span>
+                            <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Student Performance Analytics System &bull; Powered by Flask, MySQL, SQLAlchemy, Pandas & NumPy</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In - Student Analytics{% endblock %}
+
+{% block content %}
+<div style="max-width: 440px; margin: 3rem auto;">
+    <div class="glass-card">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div class="brand-icon" style="width: 56px; height: 56px; font-size: 1.8rem; margin: 0 auto 1rem auto;">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2>Account Login</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Sign in to access analytics & record management</p>
+        </div>
+
+        <form action="{{ url_for('login_page') }}" method="POST">
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="e.g. admin@analytics.com" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                <i class="fa-solid fa-right-to-bracket"></i> Log In
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; border-top: 1px solid var(--card-border); padding-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+            Don't have an account? <a href="{{ url_for('register_page') }}" style="font-weight: 600;">Register Here</a>
+        </div>
+
+        <div style="margin-top: 1.5rem; background: rgba(99, 102, 241, 0.1); border: 1px dashed rgba(99, 102, 241, 0.3); padding: 0.85rem; border-radius: 8px; font-size: 0.8rem;">
+            <strong><i class="fa-solid fa-key"></i> Quick Demo Credentials:</strong><br>
+            • Admin: <code>admin@analytics.com</code> / <code>admin123</code><br>
+            • Student: <code>alice.johnson@university.edu</code> / <code>student123</code>
+        </div>
+    </div>
+</div>
+{% endblock %}

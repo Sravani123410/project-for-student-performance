@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Courses Catalog - Student Analytics{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h2><i class="fa-solid fa-book-open" style="color: var(--accent-purple);"></i> Courses Catalog</h2>
+        <p style="color: var(--text-muted);">Academic course offerings and grade distributions</p>
+    </div>
+    {% if current_user.role == 'admin' %}
+    <a href="{{ url_for('new_course_form') }}" class="btn btn-primary">
+        <i class="fa-solid fa-plus-circle"></i> Add New Course
+    </a>
+    {% endif %}
+</div>
+
+<div class="glass-card" style="padding: 0; overflow: hidden;">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>Course Title</th>
+                    <th>Credits</th>
+                    <th>Enrolled Students</th>
+                    <th>Description</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if courses %}
+                    {% for course in courses %}
+                    <tr>
+                        <td><strong style="color: var(--accent-purple);">{{ course.code }}</strong></td>
+                        <td><strong>{{ course.name }}</strong></td>
+                        <td><span class="badge" style="background: rgba(139, 92, 246, 0.15); color: #a78bfa;">{{ course.credits }} Credits</span></td>
+                        <td>{{ course.to_dict().enrolled_students }} students</td>
+                        <td style="color: var(--text-muted); max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            {{ course.description or 'No description provided.' }}
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 0.4rem;">
+                                <a href="{{ url_for('view_course', id=course.id) }}" class="btn btn-secondary btn-sm" title="View Analytics"><i class="fa-solid fa-chart-simple"></i> Detail</a>
+                                {% if current_user.role == 'admin' %}
+                                <a href="{{ url_for('edit_course_form', id=course.id) }}" class="btn btn-secondary btn-sm" title="Edit Course"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{{ url_for('delete_course_confirm', id=course.id) }}" class="btn btn-danger btn-sm" title="Delete Course"><i class="fa-solid fa-trash-can"></i></a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No course offerings available.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
